@@ -29,43 +29,81 @@ var questions = [
 
 var timer = 0;
 var answerList = document.getElementById("answer-list");
+var questionRandomizer = 0;
 var answerRandomizer = 0;
 
 var questionLoad = function () {
-    var questionRandomizer = Math.floor(Math.random()*questions.length)
-    document.getElementById("question").textContent = questions[questionRandomizer].q;
-    for (i = 0; i < 4; i++) {
-        var button = document.createElement("button");
-        //DOM button element is created.
-        var randomizeAnswers = function() {
-            // function used to randomize the answer order based on length of items in object
-            // stores number of answers remaining in object
-            var answerRandomizer = (Math.floor(Math.random() * 4) + 1);
-            // creates and stores a random number between 1 and however many answers are in object
-            button.innerHTML = questions[questionRandomizer][answerRandomizer];
-            // sets the innerHTML of the button element to the value of the answer that was selected
-            // for using the answerRandomizer variable
-            delete questions[questionRandomizer][answerRandomizer];
-            // removes answer item within object array that was used as the value of the button.inner
-            // html so that it cannot be used again.
-        }
-        var createAnswers = function() {
-            console.log(questions[questionRandomizer]);
-            answerList.appendChild(button);
-        }
-        var testAnswers = function() {
-            if (button.innerHTML != "undefined") {
-                createAnswers();
-            }
-            else{
-                randomizeAnswers();
-                testAnswers();
-            };
-        }
-        randomizeAnswers();
-        testAnswers();
+    var randomizeQuestions = function() {
+        questionRandomizer = Math.floor(Math.random()* 5);
     };
-    //questions.splice(questionRandomizer, 1);
+    var setQuestion = function() {
+        document.getElementById("question").textContent = questions[questionRandomizer].q;
+    };
+    var createButtons = function() {
+        for (i = 0; i < 4; i++) {
+            var Newbutton = document.createElement("button");
+            
+            //DOM button element is created.
+            var randomizeAnswers = function() {
+                // function used to randomize the answer order based on length of items in object
+                // stores number of answers remaining in object
+                var answerRandomizer = (Math.floor(Math.random() * 4) + 1);
+                // creates and stores a random number between 1 and however many answers are in object
+                Newbutton.innerHTML = (i + 1) + ". " + questions[questionRandomizer][answerRandomizer];
+                // sets the innerHTML of the button element to the value of the answer that was selected
+                // for using the answerRandomizer variable
+                if (questions[questionRandomizer][answerRandomizer] === questions[questionRandomizer][4]) {
+                    questions[questionRandomizer][answerRandomizer] = "undefined-true";
+                }
+                else {
+                    questions[questionRandomizer][answerRandomizer] = "undefined";
+                }
+                // removes answer item within object array that was used as the value of the button.inner
+                // html so that it cannot be used again.
+
+            }
+            var createAnswers = function() {
+                Newbutton.setAttribute('id','number-' + i);
+                answerList.appendChild(Newbutton);
+                document.querySelector("#number-" + i).addEventListener("click", function () {
+                    if(Newbutton.textContent === "undefined-true") {
+                        console.log(questions[questionRandomizer]);
+                        console.log(Newbutton.textContent);
+                    }
+                    else {
+                        console.log("goodbye");
+                    }
+                });
+            };
+            var testAnswers = function() {
+                if (Newbutton.innerHTML === (i + 1) + ". " + "undefined" || Newbutton.innerHTML === (i + 1) + ". " + "undefined-true")  {
+                    randomizeAnswers();
+                    testAnswers();
+                }
+                else{
+                    createAnswers();
+                };
+            }
+            randomizeAnswers();
+            testAnswers();
+        };
+    };
+    var deleteOldQuestion = function() {
+        questions[questionRandomizer].q = "undefined";
+    };
+    var testQuestion = function() {
+        if (questions[questionRandomizer].q != "undefined") {
+            setQuestion();
+            createButtons();
+            deleteOldQuestion();
+        }
+        else{
+            randomizeQuestions();
+            testQuestion();
+        }
+    }
+    randomizeQuestions();
+    testQuestion();
 }
 
 var beginInterval = function() {
@@ -87,4 +125,3 @@ document.querySelector("#start").addEventListener("click", function() {
     beginInterval();
     questionLoad();
 });
-

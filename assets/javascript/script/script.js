@@ -29,6 +29,7 @@ var questions = [
 
 var timer = 0;
 var answerList = document.getElementById("answer-list");
+var bigText = document.getElementById("question");
 var questionRandomizer = 0;
 var answerRandomizer = 0;
 
@@ -36,47 +37,60 @@ var questionLoad = function () {
     var randomizeQuestions = function() {
         questionRandomizer = Math.floor(Math.random()* 5);
     };
+
     var setQuestion = function() {
-        document.getElementById("question").textContent = questions[questionRandomizer].q;
+        bigText.textContent = questions[questionRandomizer].q;
     };
+
     var createButtons = function() {
         for (i = 0; i < 4; i++) {
-            var Newbutton = document.createElement("button");
-            
-            //DOM button element is created.
+            var newButton = document.createElement("button");
             var randomizeAnswers = function() {
-                // function used to randomize the answer order based on length of items in object
-                // stores number of answers remaining in object
-                var answerRandomizer = (Math.floor(Math.random() * 4) + 1);
-                // creates and stores a random number between 1 and however many answers are in object
-                Newbutton.innerHTML = (i + 1) + ". " + questions[questionRandomizer][answerRandomizer];
-                // sets the innerHTML of the button element to the value of the answer that was selected
-                // for using the answerRandomizer variable
+                answerRandomizer = (Math.floor(Math.random() * 4) + 1);
+                newButton.innerHTML = (i + 1) + ". " + questions[questionRandomizer][answerRandomizer];
                 if (questions[questionRandomizer][answerRandomizer] === questions[questionRandomizer][4]) {
-                    questions[questionRandomizer][answerRandomizer] = "undefined-true";
+                    questions[questionRandomizer][answerRandomizer] = "used-true";
                 }
                 else {
-                    questions[questionRandomizer][answerRandomizer] = "undefined";
+                    questions[questionRandomizer][answerRandomizer] = "used";
                 }
-                // removes answer item within object array that was used as the value of the button.inner
-                // html so that it cannot be used again.
+            };
 
-            }
             var createAnswers = function() {
-                Newbutton.setAttribute('id','number-' + i);
-                answerList.appendChild(Newbutton);
-                document.querySelector("#number-" + i).addEventListener("click", function () {
-                    if(Newbutton.textContent === "undefined-true") {
-                        console.log(questions[questionRandomizer]);
-                        console.log(Newbutton.textContent);
+                if (questions[questionRandomizer][answerRandomizer] === "used-true") {
+                    newButton.setAttribute('id','true');
+                }
+                else {
+                    newButton.setAttribute('id','false');
+                }
+                answerList.appendChild(newButton);
+                newButton.addEventListener("click", function () {
+                    if(this.getAttribute('id') === "true") {
+                        deleteButtons();
+                        if (questionsChecker()) {
+                            questionLoad();
+                        }
+                        else {
+                            clearInterval(interval);
+                            displayScoreList();
+                        }
                     }
                     else {
-                        console.log("goodbye");
+                        timer = timer - 15;
+                        deleteButtons();
+                        if(questionsChecker()) {
+                            questionLoad();
+                        }
+                        else {
+                            clearInterval(interval);
+                            displayScoreList();
+                        }
                     }
                 });
             };
+
             var testAnswers = function() {
-                if (Newbutton.innerHTML === (i + 1) + ". " + "undefined" || Newbutton.innerHTML === (i + 1) + ". " + "undefined-true")  {
+                if (newButton.innerHTML === (i + 1) + ". " + "used" || newButton.innerHTML === (i + 1) + ". " + "used-true")  {
                     randomizeAnswers();
                     testAnswers();
                 }
@@ -88,11 +102,13 @@ var questionLoad = function () {
             testAnswers();
         };
     };
+
     var deleteOldQuestion = function() {
-        questions[questionRandomizer].q = "undefined";
+        questions[questionRandomizer].q = "used";
     };
+
     var testQuestion = function() {
-        if (questions[questionRandomizer].q != "undefined") {
+        if (questions[questionRandomizer].q != "used") {
             setQuestion();
             createButtons();
             deleteOldQuestion();
@@ -104,9 +120,12 @@ var questionLoad = function () {
     }
     randomizeQuestions();
     testQuestion();
-}
+};
 
 var beginInterval = function() {
+    var stopInterval = function () {
+        clearInterval(interval);
+    }
     var interval = setInterval(function(){
         if (timer) {
             timer--;
@@ -114,8 +133,39 @@ var beginInterval = function() {
         }
         else {
             clearInterval(interval);
+            deleteButtons();
+            displayScoreList();
         }
     }, 1000);
+}
+
+var deleteButtons = function() {
+    while (answerList.hasChildNodes()) {
+        answerList.removeChild(answerList.firstChild);
+    };
+};
+
+var questionsChecker = function() {
+    var tracker = 0;
+    for (i = 0; i < 5; i++) {
+        if(questions[i].q === "used") {
+            tracker++
+        }
+    }
+    if (tracker === 5) {
+        tracker = 0;
+        return false;
+    }
+    else {
+        tracker = 0;
+        return true;
+    }
+}
+
+var displayScoreList = function () {
+    bigText.textContent = "All done!";
+    var finalScore = document.createElement("li");
+    finalScore.innerHTML("Your final score is ");
 }
 
 document.querySelector("#start").addEventListener("click", function() {

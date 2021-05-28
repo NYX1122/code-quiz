@@ -32,6 +32,9 @@ var answerList = document.getElementById("answer-list");
 var bigText = document.getElementById("question");
 var questionRandomizer = 0;
 var answerRandomizer = 0;
+var scoreListTime = false;
+var rightOrWrong = "";
+var message = document.createElement("h4");
 
 var questionLoad = function () {
     var randomizeQuestions = function() {
@@ -66,24 +69,26 @@ var questionLoad = function () {
                 answerList.appendChild(newButton);
                 newButton.addEventListener("click", function () {
                     if(this.getAttribute('id') === "true") {
+                        rightOrWrong = "right";
                         deleteButtons();
                         if (questionsChecker()) {
                             questionLoad();
                         }
                         else {
-                            clearInterval(interval);
                             displayScoreList();
+                            scoreListTime = true;
                         }
                     }
                     else {
+                        rightOrWrong = "wrong";
                         timer = timer - 15;
                         deleteButtons();
                         if(questionsChecker()) {
                             questionLoad();
                         }
                         else {
-                            clearInterval(interval);
                             displayScoreList();
+                            scoreListTime = true;
                         }
                     }
                 });
@@ -100,6 +105,16 @@ var questionLoad = function () {
             }
             randomizeAnswers();
             testAnswers();
+        };
+        if( rightOrWrong === "") {
+        }
+        else if (rightOrWrong === "right") {
+            message.textContent = "Correct!";
+            answerList.appendChild(message);
+        }
+        else {
+            message.textContent = "Wrong!";
+            answerList.appendChild(message);
         };
     };
 
@@ -123,21 +138,22 @@ var questionLoad = function () {
 };
 
 var beginInterval = function() {
-    var stopInterval = function () {
-        clearInterval(interval);
-    }
-    var interval = setInterval(function(){
-        if (timer) {
+    interval = setInterval(function(){
+        if (timer > 0 && !scoreListTime) {
+            console.log(questionsChecker());
             timer--;
             document.getElementById("time").textContent = timer;
         }
-        else {
+        else if (scoreListTime) {
             clearInterval(interval);
+            document.getElementById("time").textContent = timer;
+        }
+        else {
             deleteButtons();
             displayScoreList();
-        }
+        };
     }, 1000);
-}
+};
 
 var deleteButtons = function() {
     while (answerList.hasChildNodes()) {
@@ -153,7 +169,6 @@ var questionsChecker = function() {
         }
     }
     if (tracker === 5) {
-        tracker = 0;
         return false;
     }
     else {
@@ -163,9 +178,14 @@ var questionsChecker = function() {
 }
 
 var displayScoreList = function () {
+    bigText.className = "shift-left";
     bigText.textContent = "All done!";
-    var finalScore = document.createElement("li");
-    finalScore.innerHTML("Your final score is ");
+    var finalScore = document.createElement("h3");
+    answerList.appendChild(finalScore);
+    finalScore.textContent = "Your final score is " + timer + ".";
+    var initials = document.createElement("h3");
+    answerList.appendChild(initials);
+    initials.textContent = "Enter initials:";
 }
 
 document.querySelector("#start").addEventListener("click", function() {

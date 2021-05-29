@@ -26,7 +26,6 @@ var questions = [
     3: "for loops",
     4: "console.log"}
 ];
-
 var timer = 0;
 var contentWrapper = document.getElementById("content-wrapper");
 var answerList = document.getElementById("answer-list");
@@ -200,11 +199,11 @@ var enterScore = function () {
     inputButton.textContent = "Submit";
 
     inputButton.addEventListener("click", function() {
-        displayHighScores(input, finalScore, inputWrapper);
+        highScores(input, finalScore, inputWrapper);
     });
 }
 
-var displayHighScores = function (input, finalScore, inputWrapper) {
+var highScores = function (input, finalScore, inputWrapper) {
     var userScore = {user: "", score: ""};
     userScore.user = input.value;
     userScore.score = timer;
@@ -212,7 +211,16 @@ var displayHighScores = function (input, finalScore, inputWrapper) {
     var storageKey = "hi";
     if(localStorage.getItem(storageKey)) {
         allUserScores = JSON.parse(localStorage.getItem(storageKey));
-        allUserScores.push(userScore);
+        var indicator = "";
+        for (i = 0; i < allUserScores.length; i++) {
+            if (allUserScores[i].score === timer) {
+                allUserScores.splice(i, 1, userScore);
+                indicator = "yes";
+            }
+        };
+        if (indicator === "") {
+            allUserScores.push(userScore);
+        };
         localStorage.setItem(storageKey, JSON.stringify(allUserScores));
     }
     else {
@@ -222,6 +230,9 @@ var displayHighScores = function (input, finalScore, inputWrapper) {
     var localStorageLength = localStorage.length;
     finalScore.remove();
     inputWrapper.remove();
+    displayHighScores(allUserScores);
+};
+var displayHighScores = function (allUserScores) {
     bigText.textContent = "High Scores";
     var scoreList = document.createElement("ol");
     scoreList.className = "score-list";
@@ -261,13 +272,34 @@ var displayHighScores = function (input, finalScore, inputWrapper) {
         }
     };
     allUserScores = holderObjectArray;
-    console.log(allUserScores);
     for (i = 0; i < allUserScores.length; i++) {
         var item = document.createElement("li");
         var itemInfo = allUserScores[i];
         item.textContent = itemInfo.user + " - " + itemInfo.score;
         scoreList.appendChild(item);
     }
+    var buttonDiv = document.createElement("div");
+    buttonDiv.className = "button-div";
+    var goBack = document.createElement("button");
+    goBack.className = "score-buttons";
+    goBack.setAttribute("id", "go-back");
+    var clearHighScores = document.createElement("button");
+    clearHighScores.className = "score-buttons";
+    clearHighScores.setAttribute("id", "clear-highscores");
+    goBack.textContent = "Go back";
+    clearHighScores.textContent = "Clear high scores";
+    contentWrapper.appendChild(buttonDiv);
+    buttonDiv.appendChild(goBack);
+    buttonDiv.appendChild(clearHighScores);
+    document.querySelector("#go-back").addEventListener("click", function() {
+        location.reload();
+    });
+    document.querySelector("#clear-highscores").addEventListener("click", function() {
+        localStorage.clear();
+        clearHighScores.remove();
+        scoreList.remove();
+        bigText.textContent = "Scores cleared!";
+    });
 }
 
 document.querySelector("#start").addEventListener("click", function() {
@@ -279,3 +311,10 @@ document.querySelector("#start").addEventListener("click", function() {
     beginInterval();
     questionLoad();
 });
+
+document.querySelector(".view-scores").addEventListener("click", function() {
+    document.getElementById("beginning-message").remove();
+    document.getElementById("start").remove();
+    displayHighScores(allUserScores = JSON.parse(localStorage.getItem("hi")));
+});
+

@@ -127,3 +127,26 @@ button:hover {
     font-size: 20px;
     padding: 5;
 }
+
+.score-list {
+    background-color: lavender;
+    font-size: 25px;
+    width: 100%;
+}
+
+.score-list li {
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+
+.button-div {
+    margin-top: 25px;
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.score-buttons {
+    padding: 10px;
+    margin-right: 25px;
+}

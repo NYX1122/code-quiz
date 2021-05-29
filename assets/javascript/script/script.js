@@ -18,7 +18,7 @@ var questions = [
     {q: "String values must be enclosed within ______ when being assigned to variables.",
     1: "commas",
     2: "curly brackets",
-    3: "parenthesis",
+    3: "parentheses",
     4: "quotes"},
     {q: "A very useful tool used during development and debugging for printing content to the debugger is:",
     1: "JavaScript",
@@ -28,6 +28,7 @@ var questions = [
 ];
 
 var timer = 0;
+var contentWrapper = document.getElementById("content-wrapper");
 var answerList = document.getElementById("answer-list");
 var bigText = document.getElementById("question");
 var questionRandomizer = 0;
@@ -75,7 +76,7 @@ var questionLoad = function () {
                             questionLoad();
                         }
                         else {
-                            displayScoreList();
+                            enterScore();
                             scoreListTime = true;
                         }
                     }
@@ -87,7 +88,7 @@ var questionLoad = function () {
                             questionLoad();
                         }
                         else {
-                            displayScoreList();
+                            enterScore();
                             scoreListTime = true;
                         }
                     }
@@ -149,8 +150,9 @@ var beginInterval = function() {
             document.getElementById("time").textContent = timer;
         }
         else {
+            clearInterval(interval);
             deleteButtons();
-            displayScoreList();
+            enterScore();
         };
     }, 1000);
 };
@@ -177,20 +179,102 @@ var questionsChecker = function() {
     }
 }
 
-var displayScoreList = function () {
-    bigText.className = "shift-left";
+var enterScore = function () {
+    answerList.remove();
+    contentWrapper.classList.remove("question-info");
+    contentWrapper.className = "results";
     bigText.textContent = "All done!";
     var finalScore = document.createElement("h3");
-    answerList.appendChild(finalScore);
+    contentWrapper.appendChild(finalScore);
     finalScore.textContent = "Your final score is " + timer + ".";
+    var inputWrapper = document.createElement("div");
+    inputWrapper.className = "input-wrapper";
+    contentWrapper.appendChild(inputWrapper);
     var initials = document.createElement("h3");
-    answerList.appendChild(initials);
+    inputWrapper.appendChild(initials);
     initials.textContent = "Enter initials:";
+    var input = document.createElement("input");
+    inputWrapper.appendChild(input);
+    var inputButton = document.createElement("button");
+    inputWrapper.appendChild(inputButton);
+    inputButton.textContent = "Submit";
+
+    inputButton.addEventListener("click", function() {
+        displayHighScores(input, finalScore, inputWrapper);
+    });
+}
+
+var displayHighScores = function (input, finalScore, inputWrapper) {
+    var userScore = {user: "", score: ""};
+    userScore.user = input.value;
+    userScore.score = timer;
+    var allUserScores = [];
+    var storageKey = "hi";
+    if(localStorage.getItem(storageKey)) {
+        allUserScores = JSON.parse(localStorage.getItem(storageKey));
+        allUserScores.push(userScore);
+        localStorage.setItem(storageKey, JSON.stringify(allUserScores));
+    }
+    else {
+        allUserScores.push(userScore);
+        localStorage.setItem(storageKey, JSON.stringify(allUserScores));
+    };
+    var localStorageLength = localStorage.length;
+    finalScore.remove();
+    inputWrapper.remove();
+    bigText.textContent = "High Scores";
+    var scoreList = document.createElement("ol");
+    scoreList.className = "score-list";
+    contentWrapper.appendChild(scoreList);
+    var valueArray = [];
+    for (i = 0; i < allUserScores.length; i++) {
+        var value = allUserScores[i].score;
+        valueArray.push(value);
+    }
+    valueArray.sort(function(a, b){return b - a});
+    var infinite = "infinite";
+    var y = 0;
+    var e = 0;
+    var holderObjectArray = [];
+    while (infinite === "infinite") {
+        var valueHolderVariable = valueArray[y];
+        var holderObject = {};
+        var userHolderVariable = "";
+        y++
+        var test = function() {
+            if (allUserScores[e].score === valueHolderVariable) {
+                userHolderVariable = allUserScores[e].user;
+            }
+            else {
+                e++
+                test();
+            }
+        };
+        test();
+        holderObject.user = userHolderVariable;
+        holderObject.score = valueHolderVariable;
+        holderObjectArray.push(holderObject);
+        e = 0;
+        console.log(holderObjectArray);
+        if (y === allUserScores.length) {
+            infinite ='finite';
+        }
+    };
+    allUserScores = holderObjectArray;
+    console.log(allUserScores);
+    for (i = 0; i < allUserScores.length; i++) {
+        var item = document.createElement("li");
+        var itemInfo = allUserScores[i];
+        item.textContent = itemInfo.user + " - " + itemInfo.score;
+        scoreList.appendChild(item);
+    }
 }
 
 document.querySelector("#start").addEventListener("click", function() {
     document.getElementById("beginning-message").remove();
     document.getElementById("start").remove();
+    contentWrapper.classList.remove("start-info");
+    contentWrapper.className = "question-info";
     timer = 75;
     beginInterval();
     questionLoad();
